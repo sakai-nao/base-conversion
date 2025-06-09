@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基数変換学習アプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #4da6b8 0%, #7cc7d1 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #4da6b8, #1e859a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .menu-item {
+            background: linear-gradient(135deg, #4da6b8 0%, #7cc7d1 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            box-shadow: 0 5px 15px rgba(77, 166, 184, 0.3);
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(77, 166, 184, 0.4);
+            background: linear-gradient(135deg, #7cc7d1 0%, #4da6b8 100%);
+        }
+
+        .problem-container {
+            display: none;
+            text-align: center;
+        }
+
+        .problem-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #d4edea 0%, #b3e0e8 100%);
+            border-radius: 15px;
+        }
+
+        .problem-question {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #4da6b8;
+        }
+
+        .choices {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .choice {
+            padding: 15px 25px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+            background: white;
+        }
+
+        .choice:hover {
+            border-color: #4da6b8;
+            background: #e8f7fa;
+        }
+
+        .choice.selected {
+            border-color: #4da6b8;
+            background: #4da6b8;
+            color: white;
+        }
+
+        .choice.correct {
+            border-color: #28a745;
+            background: #28a745;
+            color: white;
+        }
+
+        .choice.incorrect {
+            border-color: #dc3545;
+            background: #dc3545;
+            color: white;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4da6b8 0%, #1e859a 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .score {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 10px;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            display: none;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .slide-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 20px 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .slide-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .calculation-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.5em;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4da6b8;
+            margin: 20px auto;
+            text-align: right;
+            white-space: pre-line;
+            display: block;
+            width: fit-content;
+        }
+
+        .binary-digits {
+            display: inline-block;
+            margin: 0 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(8, 1fr);
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .problem-question {
+                font-size: 1.4em;
+            }
+            
+            .calculation-display {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="menu" class="menu-section">
+            <h1>基数変換学習アプリ</h1>
+            <div class="menu-grid">
+                <button class="menu-item" onclick="startProblem('bin2dec')">2進数 → 10進数</button>
+                <button class="menu-item" onclick="startProblem('bin2hex')">2進数 → 16進数</button>
+                <button class="menu-item" onclick="startProblem('dec2hex')">10進数 → 16進数</button>
+                <button class="menu-item" onclick="startProblem('dec2bin')">10進数 → 2進数</button>
+                <button class="menu-item" onclick="startProblem('hex2bin')">16進数 → 2進数</button>
+                <button class="menu-item" onclick="startProblem('hex2dec')">16進数 → 10進数</button>
+                <button class="menu-item" onclick="startProblem('binadd')">2進数の加算</button>
+                <button class="menu-item" onclick="startProblem('binsub')">2進数の減算</button>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="slide-btn" onclick="showSlides()">📖 解き方スライドを見る</button>
+            </div>
+        </div>
+
+        <div id="problem" class="problem-container">
+            <div id="problemTitle" class="problem-title"></div>
+            <div id="problemQuestion" class="problem-question"></div>
+            <div id="choices" class="choices"></div>
+            <div id="feedback" class="feedback"></div>
+            <div class="buttons">
+                <button id="submitBtn" class="btn btn-primary" onclick="checkAnswer()">解答</button>
+                <button id="nextBtn" class="btn btn-success" onclick="nextProblem()" style="display:none;">次の問題</button>
+                <button class="btn btn-secondary" onclick="backToMenu()">メニューに戻る</button>
+            </div>
+            <div id="score" class="score">正解数: <span id="correctCount">0</span> / 問題数: <span id="totalCount">0</span></div>
+        </div>
+    </div>
+
+    <script>
+        let currentProblemType = '';
+        let currentAnswer = '';
+        let selectedChoice = '';
+        let correctCount = 0;
+        let totalCount = 0;
+        let currentCalculation = '';
+
+        function startProblem(type) {
+            currentProblemType = type;
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('problem').style.display = 'block';
+            
+            const titles = {
+                'bin2dec': '2進数 → 10進数の基数変換',
+                'dec2bin': '10進数 → 2進数の基数変換',
+                'bin2hex': '2進数 → 16進数の基数変換',
+                'hex2bin': '16進数 → 2進数の基数変換',
+                'dec2hex': '10進数 → 16進数の基数変換',
+                'hex2dec': '16進数 → 10進数の基数変換',
+                'binadd': '2進数の加算',
+                'binsub': '2進数の減算'
+            };
+            
+            document.getElementById('problemTitle').textContent = titles[type];
+            generateProblem();
+        }
+
+        function generateProblem() {
+            let question, answer, choices;
+            
+            switch(currentProblemType) {
+                case 'bin2dec':
+                    const binNum = Math.floor(Math.random() * 256).toString(2);
+                    const decAnswer = parseInt(binNum, 2);
+                    question = `2進数「${binNum}₍₂₎」を10進数に変換するといくつ？`;
+                    answer = decAnswer.toString();
+                    choices = generateChoices(decAnswer, 'number');
+                    break;
+                    
+                case 'dec2bin':
+                    const decNum = Math.floor(Math.random() * 256);
+                    const binAnswer = decNum.toString(2);
+                    question = `10進数「${decNum}」を2進数に変換するといくつ？`;
+                    answer = binAnswer;
+                    choices = generateChoices(binAnswer, 'binary');
+                    break;
+                    
+                case 'bin2hex':
+                    const binForHex = Math.floor(Math.random() * 256).toString(2).padStart(8, '0');
+                    const hexAnswer = parseInt(binForHex, 2).toString(16).toUpperCase();
+                    question = `2進数「${binForHex}₍₂₎」を16進数に変換するといくつ？`;
+                    answer = hexAnswer;
+                    choices = generateChoices(hexAnswer, 'hex');
+                    break;
+                    
+                case 'hex2bin':
+                    const hexNum = Math.floor(Math.random() * 256).toString(16).toUpperCase();
+                    const binFromHex = parseInt(hexNum, 16).toString(2).padStart(8, '0');
+                    question = `16進数「${hexNum}₍₁₆₎」を2進数に変換するといくつ？`;
+                    answer = binFromHex;
+                    choices = generateChoices(binFromHex, 'binary');
+                    break;
+                    
+                case 'dec2hex':
+                    const decForHex = Math.floor(Math.random() * 256);
+                    const hexFromDec = decForHex.toString(16).toUpperCase();
+                    question = `10進数「${decForHex}」を16進数に変換するといくつ？`;
+                    answer = hexFromDec;
+                    choices = generateChoices(hexFromDec, 'hex');
+                    break;
+                    
+                case 'hex2dec':
+                    const hexForDec = Math.floor(Math.random() * 256).toString(16).toUpperCase();
+                    const decFromHex = parseInt(hexForDec, 16);
+                    question = `16進数「${hexForDec}₍₁₆₎」を10進数に変換するといくつ？`;
+                    answer = decFromHex.toString();
+                    choices = generateChoices(decFromHex, 'number');
+                    break;
+                    
+                case 'binadd':
+                    const num1 = Math.floor(Math.random() * 16);
+                    const num2 = Math.floor(Math.random() * 16);
+                    const bin1 = num1.toString(2).padStart(4, '0');
+                    const bin2 = num2.toString(2).padStart(4, '0');
+                    const sum = num1 + num2;
+                    const binSum = sum.toString(2);
+                    question = `2進数の加算を行ってください`;
+                    answer = binSum;
+                    choices = generateChoices(binSum, 'binary');
+                    
+                    // 問題表示用の計算式を設定（右寄せ）
+                    currentCalculation = `   ${bin1}\n+  ${bin2}\n${'――――――'}`;
+                    break;
+                    
+                case 'binsub':
+                    const minuend = Math.floor(Math.random() * 16) + 16; // 16-31の範囲
+                    const subtrahend = Math.floor(Math.random() * 16); // 0-15の範囲
+                    const binMinuend = minuend.toString(2);
+                    const binSubtrahend = subtrahend.toString(2).padStart(binMinuend.length, '0');
+                    const diff = minuend - subtrahend;
+                    const binDiff = diff.toString(2);
+                    question = `2進数の減算を行ってください`;
+                    answer = binDiff;
+                    choices = generateChoices(binDiff, 'binary');
+                    
+                    // 問題表示用の計算式を設定（右寄せ）
+                    const lineLength = Math.max(binMinuend.length, binSubtrahend.length) + 2;
+                    currentCalculation = `  ${binMinuend}\n- ${binSubtrahend}\n${'―'.repeat(lineLength)}`;
+                    break;
+            }
+            
+            currentAnswer = answer;
+            displayProblem(question, choices);
+        }
+
+        function generateChoices(correct, type) {
+            const choices = [correct];
+            
+            while(choices.length < 3) {
+                let wrong;
+                if(type === 'number') {
+                    wrong = Math.max(0, correct + Math.floor(Math.random() * 20) - 10);
+                } else if(type === 'binary') {
+                    const wrongNum = Math.floor(Math.random() * 256);
+                    wrong = wrongNum.toString(2);
+                } else if(type === 'hex') {
+                    const wrongNum = Math.floor(Math.random() * 256);
+                    wrong = wrongNum.toString(16).toUpperCase();
+                }
+                
+                if(!choices.includes(wrong)) {
+                    choices.push(wrong);
+                }
+            }
+            
+            return shuffleArray(choices);
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for(let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function displayProblem(question, choices) {
+            const questionDiv = document.getElementById('problemQuestion');
+            questionDiv.innerHTML = '';
+            
+            // 問題文を追加
+            const questionText = document.createElement('div');
+            questionText.textContent = question;
+            questionDiv.appendChild(questionText);
+            
+            // 計算式がある場合（加算・減算）は表示
+            if(currentCalculation) {
+                const calcDiv = document.createElement('div');
+                calcDiv.className = 'calculation-display';
+                calcDiv.style.whiteSpace = 'pre-line';
+                calcDiv.textContent = currentCalculation;
+                questionDiv.appendChild(calcDiv);
+            }
+            
+            const choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+            
+            choices.forEach((choice, index) => {
+                const choiceDiv = document.createElement('div');
+                choiceDiv.className = 'choice';
+                choiceDiv.textContent = `${index + 1}. ${choice}`;
+                choiceDiv.onclick = () => selectChoice(choice, choiceDiv);
+                choicesDiv.appendChild(choiceDiv);
+            });
+            
+            document.getElementById('submitBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('feedback').style.display = 'none';
+            selectedChoice = '';
+        }
+
+        function selectChoice(choice, element) {
+            document.querySelectorAll('.choice').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedChoice = choice;
+        }
+
+        function checkAnswer() {
+            if(!selectedChoice) {
+                alert('選択肢を選んでください');
+                return;
+            }
+            
+            totalCount++;
+            const isCorrect = selectedChoice.toString() === currentAnswer.toString();
+            
+            if(isCorrect) {
+                correctCount++;
+            }
+            
+            document.querySelectorAll('.choice').forEach(el => {
+                el.onclick = null;
+                // 選択肢のテキストから番号を除去して答えだけを取得
+                const choiceText = el.textContent.replace(/^\d+\.\s*/, '');
+                if(choiceText === currentAnswer) {
+                    el.classList.add('correct');
+                } else if(el.classList.contains('selected') && !isCorrect) {
+                    el.classList.add('incorrect');
+                }
+            });
+            
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'block';
+            
+            if(isCorrect) {
+                feedback.className = 'feedback correct';
+                feedback.textContent = '正解です！';
+            } else {
+                feedback.className = 'feedback incorrect';
+                feedback.textContent = `不正解です。正解は「${currentAnswer}」です。`;
+            }
+            
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'inline-block';
+            
+            updateScore();
+        }
+
+        function nextProblem() {
+            currentCalculation = '';
+            generateProblem();
+        }
+
+        function updateScore() {
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('totalCount').textContent = totalCount;
+        }
+
+        function backToMenu() {
+            document.getElementById('problem').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+            correctCount = 0;
+            totalCount = 0;
+            currentCalculation = '';
+            updateScore();
+        }
+
+        function showSlides() {
+            // PDFスライドを新しいタブで直接開く
+            window.open('情報のデジタル表現（数値の計算）.pdf', '_blank');
+        }
+    </script>
+</body>
+</html>
